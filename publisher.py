@@ -65,6 +65,8 @@ class TomatoNovelPublisher:
 
     def init_browser(self):
         """初始化浏览器"""
+        import os
+
         chrome_options = Options()
 
         if self.config.get('headless', False):
@@ -86,16 +88,32 @@ class TomatoNovelPublisher:
         success = False
         last_error = None
 
-        # 方式 1: 直接使用（需要 chromedriver.exe 在 PATH 或当前目录）
+        # 方式 1: 使用本地 chromedriver.exe（最可靠）
         try:
             print("正在启动浏览器...")
-            self.driver = webdriver.Chrome(options=chrome_options)
-            success = True
+            chromedriver_path = os.path.join(os.getcwd(), "chromedriver.exe")
+            if os.path.exists(chromedriver_path):
+                print(f"使用本地 ChromeDriver: {chromedriver_path}")
+                service = Service(executable_path=chromedriver_path)
+                self.driver = webdriver.Chrome(service=service, options=chrome_options)
+                success = True
+            else:
+                raise FileNotFoundError("chromedriver.exe not found")
         except Exception as e:
             last_error = e
-            print(f"⚠ 方式 1 失败: {e}")
+            print(f"方式 1 失败: {e}")
 
-        # 方式 2: 尝试使用 webdriver-manager（如果安装了）
+        # 方式 2: 直接使用（需要 chromedriver 在 PATH 中）
+        if not success:
+            try:
+                print("尝试使用系统 ChromeDriver...")
+                self.driver = webdriver.Chrome(options=chrome_options)
+                success = True
+            except Exception as e:
+                last_error = e
+                print(f"方式 2 失败: {e}")
+
+        # 方式 3: 尝试使用 webdriver-manager（最后的选择）
         if not success:
             try:
                 print("尝试使用 webdriver-manager...")
@@ -105,11 +123,11 @@ class TomatoNovelPublisher:
                 success = True
             except Exception as e:
                 last_error = e
-                print(f"⚠ 方式 2 失败: {e}")
+                print(f"方式 3 失败: {e}")
 
         if not success:
             print("\n" + "=" * 50)
-            print("✗ 浏览器启动失败")
+            print("浏览器启动失败")
             print("=" * 50)
             print("\n错误原因：ChromeDriver 未安装或版本不匹配")
             print("\n【快速解决方案】")
@@ -120,14 +138,14 @@ class TomatoNovelPublisher:
             print("4. 下载对应版本的 win64 ChromeDriver")
             print("5. 解压后将 chromedriver.exe 放到项目目录")
             print("   即：C:\\Users\\1\\Desktop\\番茄自动发布\\chromedriver.exe")
-            print("6. 重新运行程序")
+            print("6. 运行测试: python test_local.py")
             print("\n【详细教程】")
-            print("请查看: ChromeDriver安装指南.md")
+            print("请查看: 快速修复指南.md")
             print("=" * 50)
             raise Exception(f"无法启动浏览器: {last_error}")
 
         self.wait = WebDriverWait(self.driver, 30)
-        print("✓ 浏览器已启动")
+        print("浏览器已启动")
 
     def login(self):
         """
