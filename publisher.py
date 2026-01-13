@@ -79,11 +79,28 @@ class TomatoNovelPublisher:
         # 禁用自动化标识
         chrome_options.add_argument('--disable-infobars')
 
-        service = Service(ChromeDriverManager().install())
-        self.driver = webdriver.Chrome(service=service, options=chrome_options)
-        self.wait = WebDriverWait(self.driver, 30)
+        try:
+            # 尝试使用 webdriver-manager 自动下载 ChromeDriver
+            from webdriver_manager.chrome import ChromeDriverManager
+            service = Service(ChromeDriverManager().install())
+            self.driver = webdriver.Chrome(service=service, options=chrome_options)
+        except Exception as e:
+            print(f"⚠ 使用 webdriver-manager 失败: {e}")
+            print("尝试使用系统已安装的 ChromeDriver...")
+            try:
+                # 尝试使用系统路径中的 chromedriver
+                self.driver = webdriver.Chrome(options=chrome_options)
+            except Exception as e2:
+                print(f"✗ 初始化浏览器失败: {e2}")
+                print("\n请按以下步骤操作：")
+                print("1. 确保已安装 Chrome 浏览器")
+                print("2. 下载 ChromeDriver: https://googlechromelabs.github.io/chrome-for-testing/")
+                print("3. 将 ChromeDriver 放到系统 PATH 环境变量中")
+                print("4. 或将 ChromeDriver.exe 放到当前目录")
+                raise
 
-        print("浏览器已启动")
+        self.wait = WebDriverWait(self.driver, 30)
+        print("✓ 浏览器已启动")
 
     def login(self):
         """

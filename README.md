@@ -242,11 +242,29 @@ Chapter 1
 
 答：需要在番茄小说平台的作家后台手动修改。本程序暂不支持修改功能。
 
-### 4. ChromeDriver 版本不匹配怎么办？
+### 4. ChromeDriver 相关错误怎么办？
 
-答：程序会自动下载对应的 ChromeDriver。如果仍有问题，请手动安装：
+答：如果出现 `WinError 193` 或 `ChromeDriver not found` 等错误：
 
+**快速解决方法：**
+
+1. 运行测试脚本：
 ```bash
+python test_browser.py
+```
+
+2. 如果测试失败，查看《ChromeDriver安装指南.md》
+
+**手动安装 ChromeDriver：**
+
+1. 查看 Chrome 版本：在 Chrome 地址栏输入 `chrome://version/`
+2. 下载对应的 ChromeDriver：https://googlechromelabs.github.io/chrome-for-testing/
+3. 将 `chromedriver.exe` 放到项目目录
+4. 重新运行程序
+
+**重新安装依赖：**
+```bash
+pip uninstall webdriver-manager -y
 pip install webdriver-manager
 ```
 
