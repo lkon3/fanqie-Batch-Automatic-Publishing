@@ -71,6 +71,7 @@ class TomatoNovelPublisher:
             chrome_options.add_argument('--headless')
 
         # 设置用户数据目录，保持登录状态
+        # 注意：如果遇到启动问题，可以尝试删除 chrome_profile 目录
         chrome_options.add_argument('--user-data-dir=./chrome_profile')
         chrome_options.add_argument('--disable-blink-features=AutomationControlled')
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
@@ -78,26 +79,52 @@ class TomatoNovelPublisher:
 
         # 禁用自动化标识
         chrome_options.add_argument('--disable-infobars')
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--disable-dev-shm-usage')
 
+        # 尝试多种方式启动浏览器
+        success = False
+        last_error = None
+
+        # 方式 1: 直接使用（需要 chromedriver.exe 在 PATH 或当前目录）
         try:
-            # 尝试使用 webdriver-manager 自动下载 ChromeDriver
-            from webdriver_manager.chrome import ChromeDriverManager
-            service = Service(ChromeDriverManager().install())
-            self.driver = webdriver.Chrome(service=service, options=chrome_options)
+            print("正在启动浏览器...")
+            self.driver = webdriver.Chrome(options=chrome_options)
+            success = True
         except Exception as e:
-            print(f"⚠ 使用 webdriver-manager 失败: {e}")
-            print("尝试使用系统已安装的 ChromeDriver...")
+            last_error = e
+            print(f"⚠ 方式 1 失败: {e}")
+
+        # 方式 2: 尝试使用 webdriver-manager（如果安装了）
+        if not success:
             try:
-                # 尝试使用系统路径中的 chromedriver
-                self.driver = webdriver.Chrome(options=chrome_options)
-            except Exception as e2:
-                print(f"✗ 初始化浏览器失败: {e2}")
-                print("\n请按以下步骤操作：")
-                print("1. 确保已安装 Chrome 浏览器")
-                print("2. 下载 ChromeDriver: https://googlechromelabs.github.io/chrome-for-testing/")
-                print("3. 将 ChromeDriver 放到系统 PATH 环境变量中")
-                print("4. 或将 ChromeDriver.exe 放到当前目录")
-                raise
+                print("尝试使用 webdriver-manager...")
+                from webdriver_manager.chrome import ChromeDriverManager
+                service = Service(ChromeDriverManager().install())
+                self.driver = webdriver.Chrome(service=service, options=chrome_options)
+                success = True
+            except Exception as e:
+                last_error = e
+                print(f"⚠ 方式 2 失败: {e}")
+
+        if not success:
+            print("\n" + "=" * 50)
+            print("✗ 浏览器启动失败")
+            print("=" * 50)
+            print("\n错误原因：ChromeDriver 未安装或版本不匹配")
+            print("\n【快速解决方案】")
+            print("请按以下步骤操作：\n")
+            print("1. 打开 Chrome 浏览器，在地址栏输入: chrome://version/")
+            print("2. 记下版本号（如 120.0.6099.109）")
+            print("3. 访问: https://googlechromelabs.github.io/chrome-for-testing/")
+            print("4. 下载对应版本的 win64 ChromeDriver")
+            print("5. 解压后将 chromedriver.exe 放到项目目录")
+            print("   即：C:\\Users\\1\\Desktop\\番茄自动发布\\chromedriver.exe")
+            print("6. 重新运行程序")
+            print("\n【详细教程】")
+            print("请查看: ChromeDriver安装指南.md")
+            print("=" * 50)
+            raise Exception(f"无法启动浏览器: {last_error}")
 
         self.wait = WebDriverWait(self.driver, 30)
         print("✓ 浏览器已启动")
