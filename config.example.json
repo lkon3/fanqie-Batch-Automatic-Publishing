@@ -1,0 +1,14 @@
+{
+  "novel_id": "",
+  "publish_url": "https://fanqienovel.com/page/WriteNovel",
+  "headless": false,
+  "chapters_per_day": 2,
+  "publish_times": [
+    "08:00",
+    "20:00"
+  ],
+  "account": {
+    "phone": "",
+    "auto_login": true
+  }
+}
